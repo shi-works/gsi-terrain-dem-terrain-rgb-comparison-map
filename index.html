@@ -1,0 +1,321 @@
+<html>
+
+<head>
+    <title>地理院 標高タイル（Terrain-RGB）の比較マップ</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src='https://unpkg.com/maplibre-gl@3.1.0/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.1.0/dist/maplibre-gl.css' rel='stylesheet' />
+    <script src="https://unpkg.com/pmtiles@2.10.0/dist/index.js"></script>
+    <link href="maplibre-gl-compare.css" rel='stylesheet' />
+    <script src="maplibre-gl-compare.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <style>
+        body {
+            overflow: hidden;
+        }
+
+        body * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .map-overlay {
+            font: bold 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+            position: absolute;
+            width: 180px;
+            bottom: 20px;
+            left: 40px;
+            padding: 10px;
+        }
+
+        .map-overlay .map-overlay-inner {
+            background-color: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .map-overlay label {
+            display: block;
+            margin: 0 0 0px;
+            font-size: 12px;
+            top: 100px;
+            left: 10px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .map-overlay input {
+            background-color: transparent;
+            display: inline-block;
+            width: 100%;
+            position: relative;
+            margin: 0;
+            cursor: ew-resize;
+        }
+
+        .corner-text {
+            position: fixed;
+            top: 0;
+            padding: 10px;
+            font-size: 14px;
+            z-index: 1;
+            /* put text above other elements */
+            color: white;
+            /* make sure text is visible on top of other elements */
+            background-color: rgba(0, 0, 0, 0.5);
+            /* semi-transparent background for better visibility */
+        }
+
+        #left-corner {
+            left: 0;
+        }
+
+        #right-corner {
+            right: 0;
+        }
+    </style>
+    <div id="comparison-container">
+        <div id="left-corner" class="corner-text">標高タイル（10b256）</div>
+        <div id="right-corner" class="corner-text">標高タイル（10b512-7-113-50）</div>
+        <div id="before" class="map"></div>
+        <div id="after" class="map"></div>
+    </div>
+    <div class="map-overlay top">
+        <div class="map-overlay-inner">
+            <label>陰影起伏図 不透明度: <span id="hillshade-slider-opacity-value">50%</span></label>
+            <input id="hillshade-slider-opacity" type="range" min="0" max="100" step="1" value="50">
+        </div>
+    </div>
+    <script>
+        // protocolの設定
+        let protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        // マップを初期化
+        const beforeMap = new maplibregl.Map({
+            container: 'before',
+            style: 'std.json',
+            zoom: 14.22,
+            center: [139.02065, 35.22254],
+            pitch: 66,
+            bearing: 24.8,
+            maxPitch: 85,
+            attributionControl: false,
+            hash: true,
+        });
+
+        // マップをロード
+        beforeMap.on('load', () => {
+            // 標高タイル（10b256）ソース
+            beforeMap.addSource("gsi-dem-10b256", {
+                type: 'raster-dem',
+                tiles: [
+                    'https://optgeo.github.io/10b256/zxy/{z}/{x}/{y}.webp',
+                ],
+                attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
+                tileSize: 256
+            });
+
+            // 標高タイルセット
+            beforeMap.setTerrain({ 'source': 'gsi-dem-10b256', 'exaggeration': 1 });
+
+            // 陰影起伏図ソース
+            beforeMap.addSource("hillshade", {
+                type: 'raster',
+                tiles: [
+                    'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png',
+                ],
+                attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#hillshademap" target="_blank">地理院タイル(陰影起伏図)</a>',
+                tileSize: 256
+            });
+
+            // 陰影起伏図レイヤ
+            beforeMap.addLayer({
+                id: 'hillshade-tiles',
+                type: 'raster',
+                source: 'hillshade',
+                minzoom: 2,
+                maxzoom: 18,
+                paint: {
+                    'raster-opacity': 0.5
+                }
+            });
+
+        });
+
+        // スケール表示
+        beforeMap.addControl(new maplibregl.ScaleControl({
+            maxWidth: 200,
+            unit: 'metric'
+        }));
+
+        /*
+        // フルスクリーンモードのオンオフ
+        beforeMap.addControl(new maplibregl.FullscreenControl(), 'bottom-left');
+        */
+
+        // 3D地形コントロール
+        beforeMap.addControl(
+            new maplibregl.TerrainControl({
+                source: 'gsi-dem-10b256',
+                exaggeration: 1 // 標高を強調する倍率
+            }), 'bottom-left'
+        );
+
+        // 現在位置表示
+        beforeMap.addControl(new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: false
+            },
+            fitBoundsOptions: { maxZoom: 18 },
+            trackUserLocation: true,
+            showUserLocation: true
+        }), 'bottom-left');
+
+        // ズーム・回転
+        beforeMap.addControl(new maplibregl.NavigationControl(), 'bottom-left');
+
+        // Attributionを折りたたみ表示
+        beforeMap.addControl(new maplibregl.AttributionControl({
+            compact: true,
+            customAttribution: '<a href="https://twitter.com/shi__works" target="_blank">Twitter</a> | <a href="https://github.com/shi-works/comparison-between-cs-and-afm-on-maplibre-gl-js" target="_blank">Github</a>'
+        }));
+
+        // マップを初期化
+        const afterMap = new maplibregl.Map({
+            container: 'after',
+            style: 'std.json',
+            zoom: 14.22,
+            center: [139.02065, 35.22254],
+            pitch: 66,
+            bearing: 24.8,
+            maxPitch: 85,
+            attributionControl: false,
+            hash: true,
+        });
+
+        // マップをロード
+        afterMap.on('load', () => {
+            // 標高タイル（10b512-7-113-50）ソース
+            afterMap.addSource("gsi-dem-10b512-7-113-50", {
+                type: 'raster-dem',
+                tiles: [
+                    'https://optgeo.github.io/10b512-7-113-50/zxy/{z}/{x}/{y}.webp',
+                ],
+                attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
+                tileSize: 512
+            });
+
+            // 標高タイルセット
+            afterMap.setTerrain({ 'source': 'gsi-dem-10b512-7-113-50', 'exaggeration': 1 });
+
+            // 陰影起伏図ソース
+            afterMap.addSource("hillshade", {
+                type: 'raster',
+                tiles: [
+                    'https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png',
+                ],
+                attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#hillshademap" target="_blank">地理院タイル(陰影起伏図)</a>',
+                tileSize: 256
+            });
+
+            // 陰影起伏図レイヤ
+            afterMap.addLayer({
+                id: 'hillshade-tiles',
+                type: 'raster',
+                source: 'hillshade',
+                minzoom: 2,
+                maxzoom: 18,
+                paint: {
+                    'raster-opacity': 0.5
+                }
+            });
+
+        });
+
+        // Attributionを折りたたみ表示
+        afterMap.addControl(new maplibregl.AttributionControl({
+            compact: true,
+            customAttribution: '<a href="https://twitter.com/shi__works" target="_blank">Twitter</a> | <a href="https://github.com/shi-works/comparison-between-cs-and-afm-on-maplibre-gl-js" target="_blank">Github</a>'
+        }));
+
+        /*
+        // フルスクリーンモードのオンオフ
+        afterMap.addControl(new maplibregl.FullscreenControl(), 'bottom-right');
+        */
+
+        // 3D地形コントロール
+        afterMap.addControl(
+            new maplibregl.TerrainControl({
+                source: 'gsi-dem-10b512-7-113-50',
+                exaggeration: 1 // 標高を強調する倍率
+            }), 'bottom-right'
+        );
+
+        // 現在位置表示
+        afterMap.addControl(new maplibregl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: false
+            },
+            fitBoundsOptions: { maxZoom: 18 },
+            trackUserLocation: true,
+            showUserLocation: true
+        }), 'bottom-right');
+
+        // ズーム・回転
+        afterMap.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+        var container = "#comparison-container";
+        var map = new maplibregl.Compare(beforeMap, afterMap, container, {
+        });
+
+        // スライダーで陰影起伏図の不透明度を制御
+        const hillshadesliderOpactiy = document.getElementById('hillshade-slider-opacity');
+        const hillshadesliderOpactiyValue = document.getElementById('hillshade-slider-opacity-value');
+
+        hillshadesliderOpactiy.addEventListener('input', (e) => {
+            beforeMap.setPaintProperty(
+                'hillshade-tiles',
+                'raster-opacity',
+                parseInt(e.target.value, 10) / 100
+            );
+            afterMap.setPaintProperty(
+                'hillshade-tiles',
+                'raster-opacity',
+                parseInt(e.target.value, 10) / 100
+            );
+            hillshadesliderOpactiyValue.textContent = e.target.value + '%';
+        });
+
+    </script>
+</body>
+
+</html>
