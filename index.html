@@ -103,8 +103,8 @@
         }
     </style>
     <div id="comparison-container">
-        <div id="left-corner" class="corner-text">標高タイル（10b256）</div>
-        <div id="right-corner" class="corner-text">標高タイル（10b512-7-113-50）</div>
+        <div id="left-corner" class="corner-text">標高タイル（et10b/et256）</div>
+        <div id="right-corner" class="corner-text">標高タイル（et10b/et512）</div>
         <div id="before" class="map"></div>
         <div id="after" class="map"></div>
     </div>
@@ -134,7 +134,7 @@
 
         // マップをロード
         beforeMap.on('load', () => {
-            // 標高タイル（10b256）ソース
+            // 標高タイル（et10b-et256）ソース
             beforeMap.addSource("gsi-dem-et10b-et256", {
                 type: 'raster-dem',
                 tiles: [
@@ -224,11 +224,12 @@
 
         // マップをロード
         afterMap.on('load', () => {
-            // 標高タイル（10b512-7-113-50）ソース
+            // 標高タイル（et10b-et512）ソース
             afterMap.addSource("gsi-dem-et10b-et512", {
                 type: 'raster-dem',
                 tiles: [
-                    'https://x.optgeo.org/et10b/et512/{z}/{x}/{y}.webp',
+                    // 'https://x.optgeo.org/et10b/et512/{z}/{x}/{y}.webp',
+                    'https://smb.optgeo.org/ipfs/QmWGYxRhixi4itNhy1YWtYX9sBcYxuykwENNxDsWMfqNgh/{z}/{x}/{y}.webp'
                 ],
                 attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
                 tileSize: 512
