@@ -135,17 +135,17 @@
         // マップをロード
         beforeMap.on('load', () => {
             // 標高タイル（10b256）ソース
-            beforeMap.addSource("gsi-dem-10b256", {
+            beforeMap.addSource("gsi-dem-et10b-et256", {
                 type: 'raster-dem',
                 tiles: [
-                    'https://optgeo.github.io/10b256/zxy/{z}/{x}/{y}.webp',
+                    'https://x.optgeo.org/et10b/et256/{z}/{x}/{y}.webp',
                 ],
                 attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
                 tileSize: 256
             });
 
             // 標高タイルセット
-            beforeMap.setTerrain({ 'source': 'gsi-dem-10b256', 'exaggeration': 1 });
+            beforeMap.setTerrain({ 'source': 'gsi-dem-et10b-et256', 'exaggeration': 1 });
 
             // 陰影起伏図ソース
             beforeMap.addSource("hillshade", {
@@ -225,17 +225,17 @@
         // マップをロード
         afterMap.on('load', () => {
             // 標高タイル（10b512-7-113-50）ソース
-            afterMap.addSource("gsi-dem-10b512-7-113-50", {
+            afterMap.addSource("gsi-dem-et10b-et512", {
                 type: 'raster-dem',
                 tiles: [
-                    'https://optgeo.github.io/10b512-7-113-50/zxy/{z}/{x}/{y}.webp',
+                    'https://x.optgeo.org/et10b/et512/{z}/{x}/{y}.webp',
                 ],
                 attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html#dem" target="_blank">地理院タイル(標高タイル)</a>',
                 tileSize: 512
             });
 
             // 標高タイルセット
-            afterMap.setTerrain({ 'source': 'gsi-dem-10b512-7-113-50', 'exaggeration': 1 });
+            afterMap.setTerrain({ 'source': 'gsi-dem-et10b-et512', 'exaggeration': 1 });
 
             // 陰影起伏図ソース
             afterMap.addSource("hillshade", {
