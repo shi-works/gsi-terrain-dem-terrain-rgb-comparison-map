@@ -147,6 +147,7 @@
             // 標高タイルセット
             beforeMap.setTerrain({ 'source': 'gsi-dem-et10b-et256', 'exaggeration': 1 });
 
+            /*
             // 陰影起伏図ソース
             beforeMap.addSource("hillshade", {
                 type: 'raster',
@@ -168,6 +169,7 @@
                     'raster-opacity': 0.5
                 }
             });
+            */
 
         });
 
@@ -238,6 +240,7 @@
             // 標高タイルセット
             afterMap.setTerrain({ 'source': 'gsi-dem-et10b-et512', 'exaggeration': 1 });
 
+            /*
             // 陰影起伏図ソース
             afterMap.addSource("hillshade", {
                 type: 'raster',
@@ -259,6 +262,7 @@
                     'raster-opacity': 0.5
                 }
             });
+            */
 
         });
 
@@ -304,12 +308,12 @@
 
         hillshadesliderOpactiy.addEventListener('input', (e) => {
             beforeMap.setPaintProperty(
-                'hillshade-tiles',
+                'hillshade',
                 'raster-opacity',
                 parseInt(e.target.value, 10) / 100
             );
             afterMap.setPaintProperty(
-                'hillshade-tiles',
+                'hillshade',
                 'raster-opacity',
                 parseInt(e.target.value, 10) / 100
             );
